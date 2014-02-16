@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tower of Saviors</title>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+  .evolve, .evolve-result, .form-horizontal div.checkbox { display: inline-block; padding-right: 5px; }
+  .evolve-result img { margin-left: 8px; }
+  .evolve-result:before { content: '=>'; }
+  img { width: 40px; height: 40px; }
+  </style>
+  <script src="jquery.min.js"></script>
+  <script src="angular.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="bootstrap.css">
+  <script src="bootstrap.min.js"></script>
+  <script src="tabletop.min.js"></script>
+  <script type="text/javascript">
+  app = angular.module("myApp", [])
+  app.filter('limit', function() {
+    return function(input, all) {
+      if (all || !input) return input
+      return input.slice(0, 20)
+    }
+  })
+  app.directive('cardThumbnail', function() {
+    return {
+      scope: {
+        card_id: '=cardid',
+        show_images: '=showimages',
+      },
+      link: function(scope, element, attrs) {
+        scope.main_scope = window.scope
+        scope.tooltip = function(card_id){
+          return scope.main_scope.get_card_name(card_id)+' #'+card_id
+        }
+      },
+      template: '<a href="#{{card_id}}">'+
+                  '<img ng-src="{{main_scope.icon_path(card_id)}}" ng-if="show_images" title="{{tooltip(card_id)}}">'+
+                  '<span ng-if="!show_images" title="{{tooltip(card_id)}}">#{{card_id}}</span>'+
+                '</a>'
+    };
+  })
+  app.controller('AppController', ['$scope', function(scope){
+    window.scope = scope
+    scope.search = ''
+    scope.show_images = true
+    scope.format_id = function(str){
+      if (str.length == 0){
+        return "missing"
+      }
+      if (str.length == 1){
+        return "00"+str
+      }
+      if (str.length == 2){
+        return "0"+str
+      }
+      return str
+    }
+    scope.icon_path = function(card_id){
+      return "icons/"+scope.format_id(card_id)+".png"
+    }
+    scope.get_card = function(card_id){
+      return scope.cards_by_id[card_id]
+    }
+    scope.get_card_name = function(card_id){
+      var card = scope.cards_by_id[scope.format_id(card_id)]
+      return card && card.name
+    }
+
+    function updateCards(data, tabletop) {
+      // console.log(data)
+      // console.log(tabletop)
+      scope.$apply(function(){
+        scope.cards = []
+        scope.cards_by_id = {}
+        for(var i in data){
+          // if (i > 10) return
+          var card = data[i]
+          var evolves = []
+          for(var j = 1; j <= 5; j++){
+            var evolve = card['evolve' + j]
+            if (evolve && evolve != '-') {
+              evolves.push(evolve)
+            }
+          }
+          card.evolves = evolves
+          card.id = scope.format_id(card.id)
+          scope.cards.push(card)
+          scope.cards_by_id[card.id] = card
+          // console.log('card'+i, card)
+        }
+      })
+    }
+    Tabletop.init( { key: '0AgrwVCi0Zp_LdHJCaTEtX1hhbkM1UnlPYW5WUUxWRlE',
+                   callback: updateCards,
+                   simpleSheet: true } )
+  }])
+  </script>
+</head>
+
+<body ng-controller="AppController">
+  <div id="main">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="search" class="col-sm-2 control-label">Search</label>
+        <div class="col-sm-10">
+          <input id="search" autofocus class="form-control" ng-model="search">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-10 col-sm-offset-2">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="show_images">
+              Show images
+            </label>
+          </div>
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="all">
+              Show all cards (might be very slow)
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <table class="table table-hover table-striped">
+      <thead>
+        <tr>
+          <th ng-if="show_images">Image</th>
+          <th>#</th>
+          <th>Name</th>
+          <th>Race</th>
+          <th>Stars</th>
+          <th>Cost</th>
+          <th>Max level</th>
+          <th>HP</th>
+          <th>ATK</th>
+          <th>Evolve</th>
+        </tr>
+      </thead>
+      <tr ng-repeat="card in cards | filter:search | limit:all" id="{{card.id}}">
+        <td ng-if="show_images"><img ng-src="{{icon_path(card.id)}}"></td>
+        <td>{{card.id}}</td>
+        <td>{{card.name}}</td>
+        <td>{{card.race}}</td>
+        <td>{{card.stars}}</td>
+        <td>{{card.cost}}</td>
+        <td>{{card.lvl}}</td>
+        <td>{{card.hp}}</td>
+        <td>{{card.atk}}</td>
+        <td>
+          <div ng-if="card.evolved && card.evolved != '-'">
+            <div class="evolve" ng-repeat="evolve in card.evolves track by $index">
+              <div card-thumbnail cardid="evolve" showimages="show_images"></div>
+            </div>
+            <div card-thumbnail class="evolve-result" cardid="card.evolved" showimages="show_images"></div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <script type="text/javascript">
+  angular.bootstrap(document, ['myApp'])
+  </script>
+</body>
+</html>
