@@ -5,17 +5,25 @@
   <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <style>
-  .evolve, .evolve-result, .form-horizontal div.checkbox { display: inline-block; padding-right: 5px; }
-  .evolve-result img { margin-left: 8px; }
-  .evolve-result:before { content: '=>'; }
-  img { width: 40px; height: 40px; }
-  </style>
   <script src="jquery.min.js"></script>
   <script src="angular.min.js"></script>
   <link rel="stylesheet" type="text/css" href="bootstrap.css">
   <script src="bootstrap.min.js"></script>
   <script src="tabletop.min.js"></script>
+  <style>
+  .evolve, .evolve-result, .form-horizontal div.checkbox { display: inline-block; padding-right: 5px; }
+  .evolve-result .icon { margin-left: 8px; }
+  .evolve-result:before { content: '=>'; vertical-align: middle; }
+  img { width: 40px; height: 40px; }
+  .icon { background-image: url('icons/sprite.jpg'); width: 40px; height: 40px; display: inline-block; vertical-align: middle; }
+  </style>
+  <script type="text/javascript">
+  var styleSheet = document.styleSheets[document.styleSheets.length-1]
+  for(var i = 0; i < 30; i++) {
+    styleSheet.insertRule('.col'+i+'{background-position-x: -'+(1+i*42)+'px;}', 0)
+    styleSheet.insertRule('.row'+i+'{background-position-y: -'+(1+i*42)+'px;}', 0)
+  }
+  </script>
   <script type="text/javascript">
   app = angular.module("myApp", [])
   app.filter('limit', function() {
@@ -35,9 +43,12 @@
         scope.tooltip = function(card_id){
           return scope.main_scope.get_card_name(card_id)+' #'+card_id
         }
+        scope.class_name = function(card_id){
+          return "col"+(card_id % 20)+" row"+(Math.floor(card_id / 20))
+        }
       },
       template: '<a href="#{{card_id}}">'+
-                  '<img ng-src="{{main_scope.icon_path(card_id)}}" ng-if="show_images" title="{{tooltip(card_id)}}">'+
+                  '<div class="icon" src="icons/sprite.jpg" ng-class="class_name(card_id)" ng-if="show_images" title="{{tooltip(card_id)}}"></div>'+
                   '<span ng-if="!show_images" title="{{tooltip(card_id)}}">#{{card_id}}</span>'+
                 '</a>'
     };
@@ -143,7 +154,7 @@
         </tr>
       </thead>
       <tr ng-repeat="card in cards | filter:search | limit:all" id="{{card.id}}">
-        <td ng-if="show_images"><img ng-src="{{icon_path(card.id)}}"></td>
+        <td ng-if="show_images"><div card-thumbnail cardid="card.id" showimages="show_images"></div></td>
         <td>{{card.id}}</td>
         <td>{{card.name}}</td>
         <td>{{card.race}}</td>
@@ -159,6 +170,7 @@
             </div>
             <div card-thumbnail class="evolve-result" cardid="card.evolved" showimages="show_images"></div>
           </div>
+          <div ng-if="card.evolved == '-'">Cannot evolve</div>
         </td>
       </tr>
     </table>
