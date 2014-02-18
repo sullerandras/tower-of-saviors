@@ -58,16 +58,14 @@
     scope.search = ''
     scope.show_images = true
     scope.format_id = function(str){
-      if (str.length == 0){
-        return "missing"
-      }
-      if (str.length == 1){
+      if (!str) return str
+      if (str.length == 1 && str != '-'){
         return "00"+str
       }
       if (str.length == 2){
         return "0"+str
       }
-      return str
+      return ''+str
     }
     scope.icon_path = function(card_id){
       return "icons/"+scope.format_id(card_id)+".png"
@@ -78,6 +76,51 @@
     scope.get_card_name = function(card_id){
       var card = scope.cards_by_id[scope.format_id(card_id)]
       return card && card.name
+    }
+    scope.isNumeric = function(value){
+      value = ''+value
+      return /^[0-9]+$/.test(value)
+    }
+    scope.match = function(value, pattern){
+      return value.toLowerCase().indexOf(pattern.toLowerCase()) >= 0
+    }
+    scope.filter_stars = function(s, card){
+      return card.stars == s
+    }
+    scope.filter_card_id = function(s, card){
+      return (card.id == s) || (card.evolves.indexOf(s) >= 0) || (card.evolved == s)
+    }
+    scope.filter_text = function(s, card){
+      return scope.match(card.name, s) || scope.match(card.race, s)
+    }
+    scope.filter_all = function(s, card){
+      return true
+    }
+    scope.$watch('search', function(){
+      scope.filter_name = ''
+      scope.filter_function = undefined
+      var s = scope.search
+      if (scope.isNumeric(s)) {
+        if (s.length == 1) {
+          scope.filter_name = 'Show cards with '+s+' stars'
+          scope.filter_function = scope.filter_stars
+        } else if (s.length == 3) {
+          scope.filter_name = 'Show cards related to card '+s
+          scope.filter_function = scope.filter_card_id
+        }
+      } else {
+        if (s.length > 0) {
+          scope.filter_name = 'Search for Name or Race: '+s
+          scope.filter_function = scope.filter_text
+        } else {
+          scope.filter_name = 'Filtering options: number 1-9 to search for stars; card id 001 to 999; filter for name or race'
+          scope.filter_function = scope.filter_all
+        }
+      }
+    })
+    scope.card_matcher = function(card){
+      var s = scope.search
+      return scope.filter_function && scope.filter_function(s, card)
     }
 
     function updateCards(data, tabletop) {
@@ -93,10 +136,11 @@
           for(var j = 1; j <= 5; j++){
             var evolve = card['evolve' + j]
             if (evolve && evolve != '-') {
-              evolves.push(evolve)
+              evolves.push(scope.format_id(evolve))
             }
           }
           card.evolves = evolves
+          card.evolved = scope.format_id(card.evolved)
           card.id = scope.format_id(card.id)
           scope.cards.push(card)
           scope.cards_by_id[card.id] = card
@@ -118,6 +162,9 @@
         <label for="search" class="col-sm-2 control-label">Search</label>
         <div class="col-sm-10">
           <input id="search" autofocus class="form-control" ng-model="search">
+        </div>
+        <div class="col-sm-10 col-sm-offset-2">
+          {{filter_name}}
         </div>
       </div>
       <div class="form-group">
@@ -153,7 +200,7 @@
           <th>Evolve</th>
         </tr>
       </thead>
-      <tr ng-repeat="card in cards | filter:search | limit:all" id="{{card.id}}">
+      <tr ng-repeat="card in cards | filter:card_matcher | limit:all" id="{{card.id}}">
         <td ng-if="show_images"><div card-thumbnail cardid="card.id" showimages="show_images"></div></td>
         <td>{{card.id}}</td>
         <td>{{card.name}}</td>
