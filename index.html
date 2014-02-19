@@ -13,11 +13,20 @@
   <script src="bootstrap.min.js"></script>
   <script src="tabletop.min.js"></script>
   <style>
-  .evolve, .evolve-result, .form-horizontal div.checkbox { display: inline-block; padding-right: 5px; }
-  .evolve-result .icon { margin-left: 8px; }
-  .evolve-result:before { content: '=>'; vertical-align: middle; }
-  img { width: 40px; height: 40px; }
-  .icon { background-image: url('icons/sprite.jpg'); width: 40px; height: 40px; display: inline-block; vertical-align: middle; }
+  .form-horizontal div.checkbox { display: inline-block; padding-right: 5px; }
+  .header { text-align: center; font-weight: bold; }
+  .icon { text-align: center; display: inline-block; width: 40px; height: 61px; }
+  .icon div { background-image: url('icons/sprite.jpg'); width: 40px; height: 40px; display: block; vertical-align: middle; }
+  .icon span { top: 32px; padding-top: 8px; display: inline-block; position: relative; }
+  .evolve { display: inline-block; margin-right: 5px; }
+  .evolve-result { display: inline-block; }
+  .evolve-result:before { content: ''; vertical-align: middle; border: 15px solid transparent; border-left-color: black; border-right-width: 5px; font-size: 0; }
+  .card-icon, .name { display: table-cell; }
+  .name { padding-left: 5px; vertical-align: top; }
+  .row:hover { background-color: #eee; }
+  .row { border-top: 1px solid #ddd; padding-top:5px; }
+  .row.header { border-top: none; }
+  .row.selected { box-shadow: inset 0px 0px 8px black; }
   </style>
   <script type="text/javascript">
   var styleSheet = document.styleSheets[document.styleSheets.length-1]
@@ -38,7 +47,6 @@
     return {
       scope: {
         card_id: '=cardid',
-        show_images: '=showimages',
       },
       link: function(scope, element, attrs) {
         scope.main_scope = window.scope
@@ -49,16 +57,16 @@
           return "col"+(card_id % 20)+" row"+(Math.floor(card_id / 20))
         }
       },
-      template: '<a href="#{{card_id}}">'+
-                  '<div class="icon" src="icons/sprite.jpg" ng-class="class_name(card_id)" ng-if="show_images" title="{{tooltip(card_id)}}"></div>'+
-                  '<span ng-if="!show_images" title="{{tooltip(card_id)}}">#{{card_id}}</span>'+
+      template: '<a class="icon" href="#{{card_id}}">'+
+                  '<div ng-class="class_name(card_id)" title="{{tooltip(card_id)}}"><span title="{{tooltip(card_id)}}">#{{card_id}}</span></div>'+
+                  ''+
                 '</a>'
     };
   })
   app.controller('AppController', ['$scope', function(scope){
     window.scope = scope
     scope.search = ''
-    scope.show_images = true
+    scope.selected_card = undefined
     scope.format_id = function(str){
       if (!str) return str
       if (str.length == 1 && str != '-'){
@@ -124,6 +132,13 @@
       var s = scope.search
       return scope.filter_function && scope.filter_function(s, card)
     }
+    scope.select_card = function(card){
+      if (scope.selected_card == card) {
+        scope.selected_card = undefined
+      } else {
+        scope.selected_card = card
+      }
+    }
 
     function updateCards(data, tabletop) {
       // console.log(data)
@@ -159,70 +174,57 @@
 
 <body ng-controller="AppController">
   <div id="main">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label for="search" class="col-sm-2 control-label">Search</label>
-        <div class="col-sm-10">
-          <input id="search" autofocus class="form-control" ng-model="search">
-        </div>
-        <div class="col-sm-10 col-sm-offset-2">
-          {{filter_name}}
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="col-sm-10 col-sm-offset-2">
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" ng-model="show_images">
-              Show images
-            </label>
+    <div class="container">
+      <form class="form-horizontal">
+        <div class="form-group">
+          <label for="search" class="col-sm-2 control-label">Search</label>
+          <div class="col-sm-10">
+            <input id="search" autofocus class="form-control" ng-model="search">
           </div>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" ng-model="all">
-              Show all cards (might be very slow)
-            </label>
+          <div class="col-sm-10 col-sm-offset-2">
+            {{filter_name}}
           </div>
         </div>
-      </div>
-    </form>
-
-    <table class="table table-hover table-striped">
-      <thead>
-        <tr>
-          <th ng-if="show_images">Image</th>
-          <th>#</th>
-          <th>Name</th>
-          <th>Race</th>
-          <th>Stars</th>
-          <th>Cost</th>
-          <th>Max level</th>
-          <th>HP</th>
-          <th>ATK</th>
-          <th>Evolve</th>
-        </tr>
-      </thead>
-      <tr ng-repeat="card in cards | filter:card_matcher | limit:all" id="{{card.id}}">
-        <td ng-if="show_images"><div card-thumbnail cardid="card.id" showimages="show_images"></div></td>
-        <td>{{card.id}}</td>
-        <td>{{card.name}}</td>
-        <td>{{card.race}}</td>
-        <td>{{card.stars}}</td>
-        <td>{{card.cost}}</td>
-        <td>{{card.lvl}}</td>
-        <td>{{card.hp}}</td>
-        <td>{{card.atk}}</td>
-        <td>
-          <div ng-if="card.evolved && card.evolved != '-'">
-            <div class="evolve" ng-repeat="evolve in card.evolves track by $index">
-              <div card-thumbnail cardid="evolve" showimages="show_images"></div>
+        <div class="form-group">
+          <div class="col-sm-10 col-sm-offset-2">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="all">
+                Show all cards (might be very slow)
+              </label>
             </div>
-            <div card-thumbnail class="evolve-result" cardid="card.evolved" showimages="show_images"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="cards container">
+      <div class="row header">
+        <div class="col-sm-2 col-xs-4">Card</div>
+        <div class="col-sm-1 hidden-xs">Race</div>
+        <div class="col-sm-1 hidden-xs">Stars</div>
+        <div class="col-sm-1 hidden-xs">Max level</div>
+        <div class="col-sm-1 col-xs-2">HP</div>
+        <div class="col-sm-1 col-xs-2">ATK</div>
+        <div class="col-sm-5 col-xs-10">Evolve</div>
+      </div>
+      <div class="row" ng-repeat="card in cards | filter:card_matcher | limit:all" ng-click="select_card(card)" id="{{card.id}}" ng-class="{selected: selected_card==card}">
+        <div class="col-sm-2 col-xs-4"><div class="card-icon" card-thumbnail cardid="card.id"></div><div class="name">{{card.name}}</div></div>
+        <div class="col-sm-1 hidden-xs">{{card.race}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.stars}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.lvl}}</div>
+        <div class="col-sm-1 col-xs-2">{{card.hp}}</div>
+        <div class="col-sm-1 col-xs-2">{{card.atk}}</div>
+        <div class="col-sm-5 col-xs-10">
+          <div class="evolves" ng-if="card.evolved && card.evolved != '-'">
+            <div class="evolve" ng-repeat="evolve in card.evolves track by $index">
+              <div card-thumbnail cardid="evolve"></div>
+            </div><div card-thumbnail class="evolve-result" cardid="card.evolved"></div>
           </div>
           <div ng-if="card.evolved == '-'">Cannot evolve</div>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+    </div>
   </div>
   <script type="text/javascript">
   angular.bootstrap(document, ['myApp'])
