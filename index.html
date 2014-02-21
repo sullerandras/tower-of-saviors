@@ -24,9 +24,11 @@
   .card-icon, .name { display: table-cell; }
   .name { padding-left: 5px; vertical-align: top; }
   .row:hover { background-color: #eee; }
-  .row { border-top: 1px solid #ddd; padding-top:5px; }
+  .row { border-top: 1px solid #ddd; padding-top:5px; padding-bottom: 5px; }
   .row.header { border-top: none; }
   .row.selected { box-shadow: inset 0px 0px 8px black; }
+  .skill-name { font-weight: bold; }
+  .skill-effect { margin-left: 10px; }
   </style>
   <script type="text/javascript">
   var styleSheet = document.styleSheets[document.styleSheets.length-1]
@@ -198,7 +200,7 @@
       </form>
     </div>
 
-    <div class="cards container">
+    <div class="cards container-fluid">
       <div class="row header">
         <div class="col-sm-2 col-xs-4">Card</div>
         <div class="col-sm-1 hidden-xs">Race</div>
@@ -208,7 +210,7 @@
         <div class="col-sm-1 col-xs-2">ATK</div>
         <div class="col-sm-5 col-xs-10">Evolve</div>
       </div>
-      <div class="row" ng-repeat="card in cards | filter:card_matcher | limit:all" ng-click="select_card(card)" id="{{card.id}}" ng-class="{selected: selected_card==card}">
+      <div class="row" ng-repeat="card in cards | filter:card_matcher | limit:all" ng-click="select_card(card)" id="{{card.id}}" ng-class="{selected: selected_card == card}">
         <div class="col-sm-2 col-xs-4"><div class="card-icon" card-thumbnail cardid="card.id"></div><div class="name">{{card.name}}</div></div>
         <div class="col-sm-1 hidden-xs">{{card.race}}</div>
         <div class="col-sm-1 hidden-xs">{{card.stars}}</div>
@@ -222,6 +224,18 @@
             </div><div card-thumbnail class="evolve-result" cardid="card.evolved"></div>
           </div>
           <div ng-if="card.evolved == '-'">Cannot evolve</div>
+        </div>
+        <div class="col-xs-12" ng-if="selected_card == card">
+          <div class="skill">
+            <div class="skill-name">Skill: {{card.skill}}</div>
+            <div class="skill-effect">{{card.skilleffect}}</div>
+          </div>
+        </div>
+        <div class="col-xs-12" ng-if="selected_card == card">
+          <div class="leader skill">
+            <div class="skill-name">Leader Skill: {{card.leaderskill}}</div>
+            <div class="skill-effect">{{card.leaderskilleffect}}</div>
+          </div>
         </div>
       </div>
     </div>
