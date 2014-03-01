@@ -69,6 +69,7 @@
     window.scope = scope
     scope.search = ''
     scope.selected_card = undefined
+    scope.showskills = false
     scope.format_id = function(str){
       if (!str) return str
       if (str.length == 1 && str != '-'){
@@ -105,6 +106,11 @@
     scope.filter_text = function(s, card){
       return scope.match(card.name, s) || scope.match(card.race, s)
     }
+    scope.filter_skill = function(s, card){
+      s = s.replace('skill:', '')
+      return scope.match(card.skill, s) || scope.match(card.skilleffect, s) ||
+             scope.match(card.leaderskill, s) || scope.match(card.leaderskilleffect, s)
+    }
     scope.filter_all = function(s, card){
       return true
     }
@@ -121,11 +127,14 @@
           scope.filter_function = scope.filter_card_id
         }
       } else {
-        if (s.length > 0) {
+        if (s.substr(0, 6) == 'skill:') {
+          scope.filter_name = 'Search for Skill: '+s.replace('skill:', '')
+          scope.filter_function = scope.filter_skill
+        } else if (s.length > 0) {
           scope.filter_name = 'Search for Name or Race: '+s
           scope.filter_function = scope.filter_text
         } else {
-          scope.filter_name = 'Filtering options: number 1-9 to search for stars; card id 001 to 999; filter for name or race'
+          scope.filter_name = 'Filtering options: number 1-9 to search for stars; card id 001 to 999; filter for name or race; "skill:<pattern>"'
           scope.filter_function = scope.filter_all
         }
       }
@@ -195,6 +204,12 @@
                 Show all cards (might be very slow)
               </label>
             </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="showskills">
+                Always show skills (not just for the selected card)
+              </label>
+            </div>
           </div>
         </div>
       </form>
@@ -225,13 +240,13 @@
           </div>
           <div ng-if="card.evolved == '-'">Cannot evolve</div>
         </div>
-        <div class="col-xs-12" ng-if="selected_card == card">
+        <div class="col-xs-12" ng-if="selected_card == card || showskills">
           <div class="skill">
             <div class="skill-name">Skill: {{card.skill}}</div>
             <div class="skill-effect">{{card.skilleffect}}</div>
           </div>
         </div>
-        <div class="col-xs-12" ng-if="selected_card == card">
+        <div class="col-xs-12" ng-if="selected_card == card || showskills">
           <div class="leader skill">
             <div class="skill-name">Leader Skill: {{card.leaderskill}}</div>
             <div class="skill-effect">{{card.leaderskilleffect}}</div>
