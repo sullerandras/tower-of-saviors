@@ -111,6 +111,10 @@
       return scope.match(card.skill, s) || scope.match(card.skilleffect, s) ||
              scope.match(card.leaderskill, s) || scope.match(card.leaderskilleffect, s)
     }
+    scope.filter_cost = function(s, card){
+      s = parseInt(s.replace('cost:', ''))
+      return card.cost == s
+    }
     scope.filter_all = function(s, card){
       return true
     }
@@ -130,11 +134,14 @@
         if (s.substr(0, 6) == 'skill:') {
           scope.filter_name = 'Search for Skill: '+s.replace('skill:', '')
           scope.filter_function = scope.filter_skill
+        } else if (s.substr(0, 5) == 'cost:') {
+          scope.filter_name = 'Search for Cost: '+s.replace('cost:', '')
+          scope.filter_function = scope.filter_cost
         } else if (s.length > 0) {
           scope.filter_name = 'Search for Name or Race: '+s
           scope.filter_function = scope.filter_text
         } else {
-          scope.filter_name = 'Filtering options: number 1-9 to search for stars; card id 001 to 999; filter for name or race; "skill:<pattern>"'
+          scope.filter_name = 'Filtering options: number 1-9 to search for stars; card id 001 to 999; filter for name or race; "skill:<pattern>"; "cost:<cost>"'
           scope.filter_function = scope.filter_all
         }
       }
@@ -220,19 +227,21 @@
         <div class="col-sm-2 col-xs-4">Card</div>
         <div class="col-sm-1 hidden-xs">Race</div>
         <div class="col-sm-1 hidden-xs">Stars</div>
+        <div class="col-sm-1 hidden-xs">Cost</div>
         <div class="col-sm-1 hidden-xs">Max level</div>
         <div class="col-sm-1 col-xs-2">HP</div>
         <div class="col-sm-1 col-xs-2">ATK</div>
-        <div class="col-sm-5 col-xs-10">Evolve</div>
+        <div class="col-sm-4 col-xs-10">Evolve</div>
       </div>
       <div class="row" ng-repeat="card in cards | filter:card_matcher | limit:all" ng-click="select_card(card)" id="{{card.id}}" ng-class="{selected: selected_card == card}">
         <div class="col-sm-2 col-xs-4"><div class="card-icon" card-thumbnail cardid="card.id"></div><div class="name">{{card.name}}</div></div>
         <div class="col-sm-1 hidden-xs">{{card.race}}</div>
         <div class="col-sm-1 hidden-xs">{{card.stars}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.cost}}</div>
         <div class="col-sm-1 hidden-xs">{{card.lvl}}</div>
         <div class="col-sm-1 col-xs-2">{{card.hp}}</div>
         <div class="col-sm-1 col-xs-2">{{card.atk}}</div>
-        <div class="col-sm-5 col-xs-10">
+        <div class="col-sm-4 col-xs-10">
           <div class="evolves" ng-if="card.evolved && card.evolved != '-'">
             <div class="evolve" ng-repeat="evolve in card.evolves track by $index">
               <div card-thumbnail cardid="evolve"></div>
