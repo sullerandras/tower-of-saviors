@@ -101,7 +101,7 @@
       return card.stars == s
     }
     scope.filter_card_id = function(s, card){
-      return (card.id == s) || (card.evolves.indexOf(s) >= 0) || (card.evolved == s)
+      return (card.id == s) || (card.evolves.indexOf(s) >= 0) || (card.Evolved == s)
     }
     scope.filter_text = function(s, card){
       return scope.match(card.name, s) || scope.match(card.race, s)
@@ -169,13 +169,13 @@
           var card = data[i]
           var evolves = []
           for(var j = 1; j <= 5; j++){
-            var evolve = card['evolve' + j]
+            var evolve = card['Evolve' + j]
             if (evolve && evolve != '-') {
               evolves.push(scope.format_id(evolve))
             }
           }
           card.evolves = evolves
-          card.evolved = scope.format_id(card.evolved)
+          card.Evolved = scope.format_id(card.Evolved)
           card.id = scope.format_id(card.id)
           scope.cards.push(card)
           scope.cards_by_id[card.id] = card
@@ -183,7 +183,7 @@
         }
       })
     }
-    Tabletop.init( { key: '0AgrwVCi0Zp_LdHJCaTEtX1hhbkM1UnlPYW5WUUxWRlE',
+    Tabletop.init( { key: 'https://docs.google.com/spreadsheets/d/1d3mB_XC8nSFKCg7HLPR9aHbqHufpwYmJLgwyDU0EuSQ/pubhtml?gid=0&single=true',
                    callback: updateCards,
                    simpleSheet: true } )
   }])
@@ -234,31 +234,31 @@
         <div class="col-sm-4 col-xs-10">Evolve</div>
       </div>
       <div class="row" ng-repeat="card in cards | filter:card_matcher | limit:all" ng-click="select_card(card)" id="{{card.id}}" ng-class="{selected: selected_card == card}">
-        <div class="col-sm-2 col-xs-4"><div class="card-icon" card-thumbnail cardid="card.id"></div><div class="name">{{card.name}}</div></div>
-        <div class="col-sm-1 hidden-xs">{{card.race}}</div>
-        <div class="col-sm-1 hidden-xs">{{card.stars}}</div>
-        <div class="col-sm-1 hidden-xs">{{card.cost}}</div>
-        <div class="col-sm-1 hidden-xs">{{card.lvl}}</div>
-        <div class="col-sm-1 col-xs-2">{{card.hp}}</div>
-        <div class="col-sm-1 col-xs-2">{{card.atk}}</div>
+        <div class="col-sm-2 col-xs-4"><div class="card-icon" card-thumbnail cardid="card.id"></div><div class="name">{{card.Name}}</div></div>
+        <div class="col-sm-1 hidden-xs">{{card.Race}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.Stars}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.Cost}}</div>
+        <div class="col-sm-1 hidden-xs">{{card.Lvl}}</div>
+        <div class="col-sm-1 col-xs-2">{{card.HP}}</div>
+        <div class="col-sm-1 col-xs-2">{{card.ATK}}</div>
         <div class="col-sm-4 col-xs-10">
-          <div class="evolves" ng-if="card.evolved && card.evolved != '-'">
+          <div class="evolves" ng-if="card.Evolved && card.Evolved != '-'">
             <div class="evolve" ng-repeat="evolve in card.evolves track by $index">
               <div card-thumbnail cardid="evolve"></div>
-            </div><div card-thumbnail class="evolve-result" cardid="card.evolved"></div>
+            </div><div card-thumbnail class="evolve-result" cardid="card.Evolved"></div>
           </div>
-          <div ng-if="card.evolved == '-'">Cannot evolve</div>
+          <div ng-if="card.Evolved == '-'">Cannot evolve</div>
         </div>
         <div class="col-xs-12" ng-if="selected_card == card || showskills">
           <div class="skill">
-            <div class="skill-name">Skill: {{card.skill}}</div>
-            <div class="skill-effect">{{card.skilleffect}}</div>
+            <div class="skill-name">Skill: {{card.Skill}}</div>
+            <div class="skill-effect">{{card['Skill Effect']}}</div>
           </div>
         </div>
         <div class="col-xs-12" ng-if="selected_card == card || showskills">
           <div class="leader skill">
-            <div class="skill-name">Leader Skill: {{card.leaderskill}}</div>
-            <div class="skill-effect">{{card.leaderskilleffect}}</div>
+            <div class="skill-name">Leader Skill: {{card['Leader Skill']}}</div>
+            <div class="skill-effect">{{card['Leader Skill Effect']}}</div>
           </div>
         </div>
       </div>
